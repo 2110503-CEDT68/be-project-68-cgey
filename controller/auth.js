@@ -25,7 +25,9 @@ exports.register = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
+//@desc Get all users
+// @route GET /auth/users
+// @access Private
 exports.getUser = async (req, res, next) => {
   try {
     const user = await User.find();
@@ -39,7 +41,9 @@ exports.getUser = async (req, res, next) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
+//@desc Login a user
+// @route POST /auth/login
+// @access Public
 exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -57,6 +61,7 @@ exports.login = async (req, res, next) => {
     res.status(500).json({ error: "something went wrong" });
   }
 };
+
 const sendTokenResponse = (user, statusCode, res) => {
   const token = user.generateAuthToken();
   const options = {
@@ -73,7 +78,9 @@ const sendTokenResponse = (user, statusCode, res) => {
     data: { user, token },
   });
 };
-
+//@desc Logout a user
+// @route POST /auth/logout
+// @access Private
 exports.logout = async (req, res, next) => {
   res.cookie("token", "none", {
     expires: new Date(Date.now() + 10 * 1000),
@@ -84,7 +91,9 @@ exports.logout = async (req, res, next) => {
     data: {},
   });
 };
-
+//@desc Get current user
+// @route GET /auth/me
+// @access Private
 exports.getMe = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);

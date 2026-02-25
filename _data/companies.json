@@ -1,0 +1,37 @@
+[
+    {
+        "name": "Google Thailand",
+        "address": "87 Wireless Road, Lumpini, Pathumwan, Bangkok 10330",
+        "website": "https://careers.google.com",
+        "description": "Google LLC is an American multinational technology company focusing on online advertising, search engine technology, cloud computing, and AI.",
+        "tel": "02-100-1000"
+    },
+    {
+        "name": "SCB Tech X",
+        "address": "9 Ratchadaphisek Road, Chatuchak, Bangkok 10900",
+        "website": "https://scbtechx.io",
+        "description": "SCB Tech X is the technology arm of Siam Commercial Bank, driving digital innovation in financial services across Southeast Asia.",
+        "tel": "02-777-7777"
+    },
+    {
+        "name": "Agoda",
+        "address": "30F The Offices at CentralWorld, Ratchadamri Road, Pathumwan, Bangkok 10330",
+        "website": "https://careers.agoda.com",
+        "description": "Agoda is a global online travel platform, offering accommodation, flights, and activities worldwide. Part of Booking Holdings.",
+        "tel": "02-123-9999"
+    },
+    {
+        "name": "Line Thailand",
+        "address": "69 AIA Capital Center, Ratchadaphisek Road, Huai Khwang, Bangkok 10310",
+        "website": "https://linecorp.com",
+        "description": "LINE is a global communications app that provides free voice and video calls, messaging, and a variety of content services.",
+        "tel": "02-625-1000"
+    },
+    {
+        "name": "Grab Thailand",
+        "address": "Jasmine City Building, Sukhumvit 23, Klongtoei-Nua, Wattana, Bangkok 10110",
+        "website": "https://grab.com/th",
+        "description": "Grab is Southeast Asia's leading superapp, providing everyday services including ride-hailing, food delivery, and digital payments.",
+        "tel": "02-821-5000"
+    }
+]

@@ -10,7 +10,10 @@ dbconnection();
 console.log("MONGO_URI:", process.env.MONGO_URI);
 
 const auth = require("./routes/auth");
-app.use("/api/v1/", auth);
+app.use("/api/v1/auth", auth);
+
+const companies = require("./routes/companies");
+app.use("/api/v1/companies", companies);
 
 const port = process.env.PORT || 5050;
 const server = app.listen(port, () => {
