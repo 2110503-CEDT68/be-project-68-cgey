@@ -1,0 +1,42 @@
+Test ID,Test Suite,Test Name,Requirement,Method,Endpoint,Auth,Request Body,Expected Status,Expected Result
+TC-001,Auth,Register user with all required fields,Req #1 - Register with name tel email password,POST,/api/v1/auth/register,None,"{""name"":""Test User"",""tel"":""081-234-5678"",""email"":""testuser@test.com"",""password"":""password123"",""role"":""user""}",200,Returns success:true and JWT token
+TC-002,Auth,Register user missing name,Req #1 - Validation,POST,/api/v1/auth/register,None,"{""tel"":""081-234-5678"",""email"":""test2@test.com"",""password"":""password123""}",400,Returns error: Name is required
+TC-003,Auth,Register user missing tel,Req #1 - Validation,POST,/api/v1/auth/register,None,"{""name"":""Test"",""email"":""test3@test.com"",""password"":""password123""}",400,Returns error: Telephone number is required
+TC-004,Auth,Register user missing email,Req #1 - Validation,POST,/api/v1/auth/register,None,"{""name"":""Test"",""tel"":""081-234-5678"",""password"":""password123""}",400,Returns error: Email is required
+TC-005,Auth,Register user missing password,Req #1 - Validation,POST,/api/v1/auth/register,None,"{""name"":""Test"",""tel"":""081-234-5678"",""email"":""test5@test.com""}",400,Returns error: Password is required
+TC-006,Auth,Register user duplicate email,Req #1 - Validation,POST,/api/v1/auth/register,None,"{""name"":""Test"",""tel"":""081-234-5678"",""email"":""testuser@test.com"",""password"":""password123""}",400,Returns error: duplicate key email
+TC-007,Auth,Login with valid credentials,Req #2 - Login with email and password,POST,/api/v1/auth/login,None,"{""email"":""testuser@test.com"",""password"":""password123""}",200,Returns success:true and JWT token
+TC-008,Auth,Login with wrong password,Req #2 - Login validation,POST,/api/v1/auth/login,None,"{""email"":""testuser@test.com"",""password"":""wrongpassword""}",400,Returns error: Invalid credentials
+TC-009,Auth,Login with non-existent email,Req #2 - Login validation,POST,/api/v1/auth/login,None,"{""email"":""noone@test.com"",""password"":""password123""}",400,Returns error: Invalid credentials
+TC-010,Auth,Login missing email,Req #2 - Login validation,POST,/api/v1/auth/login,None,"{""password"":""password123""}",400,Returns error: Please provide email and password
+TC-011,Auth,Login missing password,Req #2 - Login validation,POST,/api/v1/auth/login,None,"{""email"":""testuser@test.com""}",400,Returns error: Please provide email and password
+TC-012,Auth,Get current user (me),Req #2 - Verify logged in user,GET,/api/v1/auth/me,Bearer TOKEN,,200,Returns user data with name tel email role
+TC-013,Auth,Logout,Req #2 - Logout,GET,/api/v1/auth/logout,None,,200,Returns success:true and clears cookie
+TC-014,Auth,Access protected route without token,Req #2 - Auth middleware,GET,/api/v1/auth/me,None,,401,Returns error: Not authorized
+TC-015,Company,Get all companies (public),Req #3 - Company list provided to user,GET,/api/v1/companies,None,,200,Returns list of companies with count
+TC-016,Company,Get single company by ID,Req #3 - Company info,GET,/api/v1/companies/:id,None,,200,Returns company with name address website description tel
+TC-017,Company,Get company not found,Req #3 - Company info,GET,/api/v1/companies/invalidid,None,,404,Returns error: No company with id
+TC-018,Company,Admin create company,Req #3 - Setup companies,POST,/api/v1/companies,Bearer ADMIN_TOKEN,"{""name"":""Google TH"",""address"":""123 Sathorn"",""website"":""https://www.google.co.th"",""description"":""Tech company"",""tel"":""02-123-4567""}",201,Returns created company data
+TC-019,Company,User cannot create company,Req #3 - Authorization,POST,/api/v1/companies,Bearer USER_TOKEN,"{""name"":""Test Co"",""address"":""123 Road"",""website"":""https://www.test.com"",""description"":""Test"",""tel"":""02-111-1111""}",403,Returns error: User role user is not authorized
+TC-020,Company,Admin update company,Req #3 - Admin manage,PUT,/api/v1/companies/:id,Bearer ADMIN_TOKEN,"{""description"":""Updated description""}",200,Returns updated company data
+TC-021,Company,Admin delete company,Req #3 - Admin manage,DELETE,/api/v1/companies/:id,Bearer ADMIN_TOKEN,,200,Returns success:true
+TC-022,Company,Get companies with select and sort,Req #3 - Query features,GET,/api/v1/companies?select=name&sort=name,None,,200,Returns companies with only selected fields sorted
+TC-023,Company,Get companies with pagination,Req #3 - Query features,GET,/api/v1/companies?page=1&limit=10,None,,200,Returns paginated results
+TC-024,Booking,User book interview session 1 (May 10),Req #3 - Book up to 3 sessions May 10-13,POST,/api/v1/companies/:companyId/bookings,Bearer USER_TOKEN,"{""bookingDate"":""2022-05-10T10:00:00.000Z""}",201,Returns created booking with user and company ref
+TC-025,Booking,User book interview session 2 (May 11),Req #3 - Book up to 3 sessions,POST,/api/v1/companies/:companyId/bookings,Bearer USER_TOKEN,"{""bookingDate"":""2022-05-11T10:00:00.000Z""}",201,Returns created booking
+TC-026,Booking,User book interview session 3 (May 12),Req #3 - Book up to 3 sessions,POST,/api/v1/companies/:companyId/bookings,Bearer USER_TOKEN,"{""bookingDate"":""2022-05-12T10:00:00.000Z""}",201,Returns created booking
+TC-027,Booking,User book 4th session - REJECTED,Req #3 - Max 3 bookings enforced,POST,/api/v1/companies/:companyId/bookings,Bearer USER_TOKEN,"{""bookingDate"":""2022-05-13T10:00:00.000Z""}",400,Returns error: already made 3 interview bookings
+TC-028,Booking,Book with invalid date (outside May 10-13),Req #3 - Date validation,POST,/api/v1/companies/:companyId/bookings,Bearer USER_TOKEN,"{""bookingDate"":""2022-06-01T10:00:00.000Z""}",500,Returns error: Booking date must be between May 10th-13th 2022
+TC-029,Booking,Book with non-existent company,Req #3 - Validation,POST,/api/v1/companies/invalidid/bookings,Bearer USER_TOKEN,"{""bookingDate"":""2022-05-10T10:00:00.000Z""}",404,Returns error: Company not found
+TC-030,Booking,User view own bookings,Req #4 - View own bookings,GET,/api/v1/bookings,Bearer USER_TOKEN,,200,Returns only user's bookings with populated company info
+TC-031,Booking,User view single booking,Req #4 - View own booking,GET,/api/v1/bookings/:id,Bearer USER_TOKEN,,200,Returns booking with company name address website description tel
+TC-032,Booking,User edit own booking,Req #5 - Edit own booking,PUT,/api/v1/bookings/:id,Bearer USER_TOKEN,"{""bookingDate"":""2022-05-13T14:00:00.000Z""}",200,Returns updated booking with new date
+TC-033,Booking,User cannot edit other's booking,Req #5 - Authorization,PUT,/api/v1/bookings/:otherId,Bearer USER_TOKEN,"{""bookingDate"":""2022-05-13T14:00:00.000Z""}",401,Returns error: Not authorized to update this booking
+TC-034,Booking,User delete own booking,Req #6 - Delete own booking,DELETE,/api/v1/bookings/:id,Bearer USER_TOKEN,,200,Returns success:true
+TC-035,Booking,User cannot delete other's booking,Req #6 - Authorization,DELETE,/api/v1/bookings/:otherId,Bearer USER_TOKEN,,401,Returns error: Not authorized to delete this booking
+TC-036,Booking,Admin view all bookings,Req #7 - Admin view any,GET,/api/v1/bookings,Bearer ADMIN_TOKEN,,200,Returns ALL bookings from all users
+TC-037,Booking,Admin view bookings by company,Req #7 - Admin view any,GET,/api/v1/companies/:companyId/bookings,Bearer ADMIN_TOKEN,,200,Returns bookings filtered by company
+TC-038,Booking,Admin edit any booking,Req #8 - Admin edit any,PUT,/api/v1/bookings/:id,Bearer ADMIN_TOKEN,"{""bookingDate"":""2022-05-10T09:00:00.000Z""}",200,Returns updated booking
+TC-039,Booking,Admin delete any booking,Req #9 - Admin delete any,DELETE,/api/v1/bookings/:id,Bearer ADMIN_TOKEN,,200,Returns success:true
+TC-040,Cascade,Delete company cascades bookings,Cascade delete,DELETE,/api/v1/companies/:id,Bearer ADMIN_TOKEN,,200,Company and all its bookings deleted
+TC-041,Cascade,Verify bookings removed after company delete,Cascade verify,GET,/api/v1/companies/:companyId/bookings,Bearer ADMIN_TOKEN,,200,Returns count:0

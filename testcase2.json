@@ -1,0 +1,969 @@
+{
+  "info": {
+    "_postman_id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+    "name": "Job Fair - Full Booking CRUD & Cascade Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "register admin",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var timestamp = Date.now();",
+              "pm.environment.set('ADMIN_EMAIL', 'admin' + timestamp + '@test.com');",
+              "pm.environment.set('ADMIN_PASSWORD', 'admin123');"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Register admin - Status 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.environment.set(\"TOKEN\",pm.response.json().token)"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "description": "JSON Type",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\":\"Admin JobFair\",\r\n    \"tel\":\"089-999-0000\",\r\n    \"email\":\"{{ADMIN_EMAIL}}\",\r\n    \"password\": \"{{ADMIN_PASSWORD}}\",\r\n    \"role\":\"admin\"\r\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5050/api/v1/auth/register",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5050",
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "post new company",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {\r",
+              "    pm.response.to.have.status(201);\r",
+              "});\r",
+              "\r",
+              "const response = pm.response.json();\r",
+              "console.log(response.data._id);\r",
+              "\r",
+              "pm.globals.set(\"global_company_id\",response.data._id);"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var timestamp = Date.now();",
+              "pm.environment.set('COMPANY_NAME', 'TestCo' + timestamp);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "description": "JSON Type",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\":\"{{COMPANY_NAME}}\",\r\n    \"address\":\"123 Sathorn Road, Bangkok 10500\",\r\n    \"website\":\"https://www.testjobfair.com\",\r\n    \"description\":\"Leading technology company in Thailand\",\r\n    \"tel\":\"02-123-4567\"\r\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5050/api/v1/companies/",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5050",
+          "path": [
+            "api",
+            "v1",
+            "companies",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "register new user",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var timestamp = Date.now();",
+              "pm.environment.set('USER_EMAIL', 'user' + timestamp + '@test.com');",
+              "pm.environment.set('USER_PASSWORD', 'password123');"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.environment.set(\"TOKEN\",pm.response.json().token)"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "description": "JSON Type",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\":\"Test User\",\r\n    \"tel\":\"089-765-4321\",\r\n    \"email\":\"{{USER_EMAIL}}\",\r\n    \"password\": \"{{USER_PASSWORD}}\",\r\n    \"role\":\"user\"\r\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5050/api/v1/auth/register",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5050",
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "post booking 1 (May 10)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 or 201\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+              "});\r",
+              "\r",
+              "const response = pm.response.json();\r",
+              "console.log(response.data._id);\r",
+              "\r",
+              "pm.globals.set(\"global_booking_id\",response.data._id);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "description": "JSON Type",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"bookingDate\": \"2022-05-10T10:00:00.000Z\"\r\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5050/api/v1/companies/:companyId/bookings",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5050",
+          "path": [
+            "api",
+            "v1",
+            "companies",
+            ":companyId",
+            "bookings"
+          ],
+          "variable": [
+            {
+              "key": "companyId",
+              "value": "{{global_company_id}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "post booking 2 (May 11)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 or 201\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+              "});\r",
+              "\r",
+              "const response = pm.response.json();\r",
+              "pm.globals.set(\"global_booking_id\",response.data._id);"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "description": "JSON Type",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"bookingDate\": \"2022-05-11T10:00:00.000Z\"\r\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5050/api/v1/companies/:companyId/bookings",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5050",
+          "path": [
+            "api",
+            "v1",
+            "companies",
+            ":companyId",
+            "bookings"
+          ],
+          "variable": [
+            {
+              "key": "companyId",
+              "value": "{{global_company_id}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "post booking 3 (May 12)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 or 201\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+              "});\r",
+              "\r",
+              "const response = pm.response.json();\r",
+              "pm.globals.set(\"global_booking_id\",response.data._id);"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "description": "JSON Type",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"bookingDate\": \"2022-05-12T10:00:00.000Z\"\r\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5050/api/v1/companies/:companyId/bookings",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5050",
+          "path": [
+            "api",
+            "v1",
+            "companies",
+            ":companyId",
+            "bookings"
+          ],
+          "variable": [
+            {
+              "key": "companyId",
+              "value": "{{global_company_id}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "post booking 4 error (exceed 3 limit)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 400 - exceeded 3 booking limit\", function () {\r",
+              "    pm.response.to.have.status(400);\r",
+              "});\r",
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "description": "JSON Type",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"bookingDate\": \"2022-05-13T10:00:00.000Z\"\r\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5050/api/v1/companies/:companyId/bookings",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5050",
+          "path": [
+            "api",
+            "v1",
+            "companies",
+            ":companyId",
+            "bookings"
+          ],
+          "variable": [
+            {
+              "key": "companyId",
+              "value": "{{global_company_id}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "get user bookings",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"GET user bookings - should have 3\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "    pm.expect(pm.response.json().count).to.equal(3);\r",
+              "    pm.expect(pm.response.json().data[0].company.name).to.not.be.undefined;\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5050/api/v1/bookings",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5050",
+          "path": [
+            "api",
+            "v1",
+            "bookings"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "update booking (user)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "    pm.expect(pm.response.json().data.bookingDate).to.equal(\"2022-05-13T14:00:00.000Z\");\r",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "description": "JSON Type",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"bookingDate\": \"2022-05-13T14:00:00.000Z\"\r\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5050/api/v1/bookings/:id",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5050",
+          "path": [
+            "api",
+            "v1",
+            "bookings",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "{{global_booking_id}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "delete booking (user)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "description": "JSON Type",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "http://localhost:5050/api/v1/bookings/:id",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5050",
+          "path": [
+            "api",
+            "v1",
+            "bookings",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "{{global_booking_id}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "login admin (for admin tests)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Admin login - Status 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.environment.set(\"TOKEN\",pm.response.json().token)"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "description": "JSON Type",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\":\"{{ADMIN_EMAIL}}\",\r\n    \"password\":\"{{ADMIN_PASSWORD}}\"\r\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5050/api/v1/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5050",
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "admin get all bookings",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Admin GET all bookings\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "    pm.expect(pm.response.json().success).to.equal(true);\r",
+              "    pm.expect(pm.response.json().count).to.be.a('number');\r",
+              "});\r",
+              "\r",
+              "// Save first booking id for admin edit/delete tests\r",
+              "if (pm.response.json().data.length > 0) {\r",
+              "    pm.globals.set(\"global_booking_id\", pm.response.json().data[0]._id);\r",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5050/api/v1/bookings",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5050",
+          "path": [
+            "api",
+            "v1",
+            "bookings"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "admin update booking",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Admin update booking - Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "    pm.expect(pm.response.json().success).to.equal(true);\r",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "description": "JSON Type",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"bookingDate\": \"2022-05-10T09:00:00.000Z\"\r\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5050/api/v1/bookings/:id",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5050",
+          "path": [
+            "api",
+            "v1",
+            "bookings",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "{{global_booking_id}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "admin delete booking",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Admin delete booking - Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "description": "JSON Type",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "http://localhost:5050/api/v1/bookings/:id",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5050",
+          "path": [
+            "api",
+            "v1",
+            "bookings",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "{{global_booking_id}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "delete company cascade",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Delete company cascade - Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "description": "JSON Type",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "http://localhost:5050/api/v1/companies/:id",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5050",
+          "path": [
+            "api",
+            "v1",
+            "companies",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "{{global_company_id}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "get deleted company - 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 400 or 404\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([400, 404]);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5050/api/v1/companies/:id",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5050",
+          "path": [
+            "api",
+            "v1",
+            "companies",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "{{global_company_id}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
