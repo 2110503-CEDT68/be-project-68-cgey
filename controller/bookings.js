@@ -49,3 +49,83 @@ exports.addBooking = async (req, res, next) => {
         res.status(500).json({ success: false, error: "Server Error" });
     }
 };
+
+// @desc    Get bookings
+// @route   GET /api/v1/bookings
+// @access  Private
+exports.getBooking = async (req, res, next) => {
+    try {
+        const bookings = await Booking.find()
+            .populate({
+                path: "company",
+                select: "name description"
+            });
+
+        res.status(200).json({
+            success: true,
+            count: bookings.length,
+            data: bookings
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: "Server Error" });
+    }
+};
+
+// @desc    Update booking
+// @route   PUT /api/v1/bookings/:id
+// @access  Private/Admin
+exports.updateBooking = async (req, res, next) => {
+    try {
+        let booking = await Booking.findById(req.params.id);
+
+        if (!booking) {
+            return res.status(404).json({
+                success: false,
+                error: "Booking not found"
+            });
+        }
+
+        booking = await Booking.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            {
+                new: true,
+                runValidators: true
+            }
+        );
+
+        res.status(200).json({
+            success: true,
+            data: booking
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: "Server Error" });
+    }
+};
+// @desc    Delete booking
+// @route   DELETE /api/v1/bookings/:id
+// @access  Private/Admin
+exports.deleteBooking = async (req, res, next) => {
+    try {
+        const booking = await Booking.findById(req.params.id);
+
+        if (!booking) {
+            return res.status(404).json({
+                success: false,
+                error: "Booking not found"
+            });
+        }
+
+        await booking.deleteOne();
+
+        res.status(200).json({
+            success: true,
+            data: {}
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: "Server Error" });
+    }
+};
