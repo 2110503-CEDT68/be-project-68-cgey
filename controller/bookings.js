@@ -53,96 +53,79 @@ exports.addBooking = async (req, res, next) => {
 // @desc    Get bookings
 // @route   GET /api/v1/bookings
 // @access  Private
-exports.getBookings = async (req, res) => {
-  try {
-    let bookings;
+exports.getBooking = async (req, res, next) => {
+    try {
+        const bookings = await Booking.find()
+            .populate({
+                path: "company",
+                select: "name description"
+            });
 
-    // ถ้าเป็น admin ดูได้ทั้งหมด
-    if (req.user.role === "admin") {
-      bookings = await Booking.find().populate("company");
-    } 
-    // ถ้าเป็น user ดูได้แค่ของตัวเอง
-    else {
-      bookings = await Booking.find({ user: req.user.id })
-                              .populate("company");
+        res.status(200).json({
+            success: true,
+            count: bookings.length,
+            data: bookings
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: "Server Error" });
     }
-
-    res.status(200).json({
-      success: true,
-      count: bookings.length,
-      data: bookings
-    });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false });
-  }
 };
 
 // @desc    Update booking
 // @route   PUT /api/v1/bookings/:id
-// @access  Private
-exports.updateBooking = async (req, res) => {
-  try {
-    let booking = await Booking.findById(req.params.id);
+// @access  Private/Admin
+exports.updateBooking = async (req, res, next) => {
+    try {
+        let booking = await Booking.findById(req.params.id);
 
-    if (!booking) {
-      return res.status(404).json({ success: false });
+        if (!booking) {
+            return res.status(404).json({
+                success: false,
+                error: "Booking not found"
+            });
+        }
+
+        booking = await Booking.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            {
+                new: true,
+                runValidators: true
+            }
+        );
+
+        res.status(200).json({
+            success: true,
+            data: booking
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: "Server Error" });
     }
-
-    // 🔥 เช็คสิทธิ์
-    if (
-      booking.user.toString() !== req.user.id &&
-      req.user.role !== "admin"
-    ) {
-      return res.status(401).json({ success: false });
-    }
-
-    booking = await Booking.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
-
-    res.status(200).json({
-      success: true,
-      data: booking
-    });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false });
-  }
 };
-
 // @desc    Delete booking
 // @route   DELETE /api/v1/bookings/:id
-// @access  Private
-exports.deleteBooking = async (req, res) => {
-  try {
-    const booking = await Booking.findById(req.params.id);
+// @access  Private/Admin
+exports.deleteBooking = async (req, res, next) => {
+    try {
+        const booking = await Booking.findById(req.params.id);
 
-    if (!booking) {
-      return res.status(404).json({ success: false });
+        if (!booking) {
+            return res.status(404).json({
+                success: false,
+                error: "Booking not found"
+            });
+        }
+
+        await booking.deleteOne();
+
+        res.status(200).json({
+            success: true,
+            data: {}
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: "Server Error" });
     }
-
-    // 🔥 เช็คว่าเป็นเจ้าของไหม
-    if (
-      booking.user.toString() !== req.user.id &&
-      req.user.role !== "admin"
-    ) {
-      return res.status(401).json({ success: false });
-    }
-
-    await booking.deleteOne();
-
-    res.status(200).json({
-      success: true,
-      data: {}
-    });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false });
-  }
 };
