@@ -14,6 +14,7 @@ const companies = require("./routes/companies");
 
 app.use("/api/v1/", auth);
 app.use("/api/v1/companies", companies);
+app.use("/api/v1/bookings", bookings);
 
 const port = process.env.PORT || 5050;
 const server = app.listen(port, () => {
