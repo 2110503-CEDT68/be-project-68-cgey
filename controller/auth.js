@@ -6,13 +6,14 @@ const User = require("../model/User");
 // @access Public
 exports.register = async (req, res) => {
   try {
-    const { name, telephone, email, password } = req.body;
+    const { name, telephone, email, password, role } = req.body;
 
     const user = await User.create({
       name,
       telephone,
       email,
       password,
+      role,
     });
 
     res.status(200).json({
