@@ -1,25 +1,13 @@
 const express = require("express");
-const {
-    getBookings,
-    getBooking,
-    addBooking,
-    updateBooking,
-    deleteBooking,
-} = require("../controller/bookings");
+const { addBooking } = require("../controller/bookings");
 
 const { protect, authorize } = require("../middleware/auth");
 
 const router = express.Router({ mergeParams: true });
 
+// Only POST to create a booking (requirement 3)
 router
     .route("/")
-    .get(protect, getBookings)
     .post(protect, authorize("admin", "user"), addBooking);
-
-router
-    .route("/:id")
-    .get(protect, getBooking)
-    .put(protect, authorize("admin", "user"), updateBooking)
-    .delete(protect, authorize("admin", "user"), deleteBooking);
 
 module.exports = router;
