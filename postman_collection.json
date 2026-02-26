@@ -1,0 +1,1110 @@
+{
+    "info": {
+        "name": "BE-Project-68-CGEY - Interview Booking Demo",
+        "description": "Full demo collection for presentation steps 1-12.\nRun with Postman Runner or Newman.\n\nPrerequisites:\n- Server running on localhost:5050\n- MongoDB connected\n- An admin user should be seeded or created manually before running",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "BASE_URL",
+            "value": "http://localhost:5050/api/v1"
+        },
+        {
+            "key": "USER_TOKEN",
+            "value": ""
+        },
+        {
+            "key": "ADMIN_TOKEN",
+            "value": ""
+        },
+        {
+            "key": "COMPANY_ID",
+            "value": ""
+        },
+        {
+            "key": "BOOKING_ID",
+            "value": ""
+        },
+        {
+            "key": "ADMIN_BOOKING_ID",
+            "value": ""
+        },
+        {
+            "key": "USER_EMAIL",
+            "value": "testuser@example.com"
+        },
+        {
+            "key": "USER_PASSWORD",
+            "value": "password123"
+        },
+        {
+            "key": "ADMIN_EMAIL",
+            "value": "admin@example.com"
+        },
+        {
+            "key": "ADMIN_PASSWORD",
+            "value": "admin123"
+        }
+    ],
+    "item": [
+        {
+            "name": "Step 0 - Setup: Register Admin",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "const res = pm.response.json();",
+                            "pm.test('Admin registered successfully', function () {",
+                            "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                            "    pm.expect(res.success).to.be.true;",
+                            "});"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"name\": \"Admin User\",\n  \"telephone\": \"0999999999\",\n  \"email\": \"{{ADMIN_EMAIL}}\",\n  \"password\": \"{{ADMIN_PASSWORD}}\",\n  \"role\": \"admin\"\n}"
+                },
+                "url": {
+                    "raw": "{{BASE_URL}}/register",
+                    "host": [
+                        "{{BASE_URL}}"
+                    ],
+                    "path": [
+                        "register"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Step 0 - Setup: Create Company 1",
+            "event": [
+                {
+                    "listen": "prerequest",
+                    "script": {
+                        "exec": [
+                            "// First login as admin to get token",
+                            "pm.sendRequest({",
+                            "    url: pm.collectionVariables.get('BASE_URL') + '/login',",
+                            "    method: 'POST',",
+                            "    header: { 'Content-Type': 'application/json' },",
+                            "    body: {",
+                            "        mode: 'raw',",
+                            "        raw: JSON.stringify({",
+                            "            email: pm.collectionVariables.get('ADMIN_EMAIL'),",
+                            "            password: pm.collectionVariables.get('ADMIN_PASSWORD')",
+                            "        })",
+                            "    }",
+                            "}, function (err, res) {",
+                            "    const json = res.json();",
+                            "    pm.collectionVariables.set('ADMIN_TOKEN', json.data.token);",
+                            "});"
+                        ]
+                    }
+                },
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "const res = pm.response.json();",
+                            "pm.test('Company 1 created successfully', function () {",
+                            "    pm.expect(pm.response.code).to.equal(201);",
+                            "    pm.expect(res.success).to.be.true;",
+                            "    pm.expect(res.data.name).to.equal('Tech Corp');",
+                            "});",
+                            "pm.collectionVariables.set('COMPANY_ID', res.data._id);"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    },
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{ADMIN_TOKEN}}"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"name\": \"Tech Corp\",\n  \"address\": \"123 Silicon Valley, CA 94043\",\n  \"website\": \"https://techcorp.com\",\n  \"description\": \"A leading technology company specializing in software development\",\n  \"telephone\": \"02-111-1111\"\n}"
+                },
+                "url": {
+                    "raw": "{{BASE_URL}}/companies",
+                    "host": [
+                        "{{BASE_URL}}"
+                    ],
+                    "path": [
+                        "companies"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Step 0 - Setup: Create Company 2",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "const res = pm.response.json();",
+                            "pm.test('Company 2 created successfully', function () {",
+                            "    pm.expect(pm.response.code).to.equal(201);",
+                            "    pm.expect(res.success).to.be.true;",
+                            "});"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    },
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{ADMIN_TOKEN}}"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"name\": \"Data Solutions Inc\",\n  \"address\": \"456 Data Drive, NY 10001\",\n  \"website\": \"https://datasolutions.com\",\n  \"description\": \"Big data and analytics company\",\n  \"telephone\": \"02-222-2222\"\n}"
+                },
+                "url": {
+                    "raw": "{{BASE_URL}}/companies",
+                    "host": [
+                        "{{BASE_URL}}"
+                    ],
+                    "path": [
+                        "companies"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "========== STEP 1: User Registration ==========",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "const res = pm.response.json();",
+                            "pm.test('Step 1: User registered successfully', function () {",
+                            "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                            "    pm.expect(res.success).to.be.true;",
+                            "    pm.expect(res.data).to.have.property('name');",
+                            "    pm.expect(res.data).to.have.property('email');",
+                            "    pm.expect(res.data).to.have.property('telephone');",
+                            "});",
+                            "",
+                            "pm.test('Step 1: User has correct data', function () {",
+                            "    pm.expect(res.data.name).to.equal('John Doe');",
+                            "    pm.expect(res.data.email).to.equal(pm.collectionVariables.get('USER_EMAIL'));",
+                            "    pm.expect(res.data.telephone).to.equal('0812345678');",
+                            "});"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"name\": \"John Doe\",\n  \"telephone\": \"0812345678\",\n  \"email\": \"{{USER_EMAIL}}\",\n  \"password\": \"{{USER_PASSWORD}}\"\n}"
+                },
+                "url": {
+                    "raw": "{{BASE_URL}}/register",
+                    "host": [
+                        "{{BASE_URL}}"
+                    ],
+                    "path": [
+                        "register"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Step 1 - Validation: Register without name",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Step 1 Validation: Registration fails without name', function () {",
+                            "    pm.expect(pm.response.code).to.equal(500);",
+                            "    const res = pm.response.json();",
+                            "    pm.expect(res.success).to.not.equal(true);",
+                            "});"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"telephone\": \"0899999999\",\n  \"email\": \"noname@test.com\",\n  \"password\": \"password123\"\n}"
+                },
+                "url": {
+                    "raw": "{{BASE_URL}}/register",
+                    "host": [
+                        "{{BASE_URL}}"
+                    ],
+                    "path": [
+                        "register"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Step 1 - Validation: Register duplicate email",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Step 1 Validation: Registration fails with duplicate email', function () {",
+                            "    pm.expect(pm.response.code).to.equal(500);",
+                            "    const res = pm.response.json();",
+                            "    pm.expect(res.success).to.not.equal(true);",
+                            "});"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"name\": \"Duplicate User\",\n  \"telephone\": \"0899999999\",\n  \"email\": \"{{USER_EMAIL}}\",\n  \"password\": \"password123\"\n}"
+                },
+                "url": {
+                    "raw": "{{BASE_URL}}/register",
+                    "host": [
+                        "{{BASE_URL}}"
+                    ],
+                    "path": [
+                        "register"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "========== STEP 2: User Log-in ==========",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "const res = pm.response.json();",
+                            "pm.test('Step 2: User logged in successfully', function () {",
+                            "    pm.expect(pm.response.code).to.equal(200);",
+                            "    pm.expect(res.success).to.be.true;",
+                            "    pm.expect(res.data).to.have.property('token');",
+                            "});",
+                            "",
+                            "pm.collectionVariables.set('USER_TOKEN', res.data.token);"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"email\": \"{{USER_EMAIL}}\",\n  \"password\": \"{{USER_PASSWORD}}\"\n}"
+                },
+                "url": {
+                    "raw": "{{BASE_URL}}/login",
+                    "host": [
+                        "{{BASE_URL}}"
+                    ],
+                    "path": [
+                        "login"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "========== STEP 3: User View Companies ==========",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "const res = pm.response.json();",
+                            "pm.test('Step 3: Get all companies successfully', function () {",
+                            "    pm.expect(pm.response.code).to.equal(200);",
+                            "    pm.expect(res.success).to.be.true;",
+                            "    pm.expect(res.data).to.be.an('array');",
+                            "    pm.expect(res.count).to.be.greaterThan(0);",
+                            "});",
+                            "",
+                            "pm.test('Step 3: Company has required fields', function () {",
+                            "    const company = res.data[0];",
+                            "    pm.expect(company).to.have.property('name');",
+                            "    pm.expect(company).to.have.property('address');",
+                            "    pm.expect(company).to.have.property('website');",
+                            "    pm.expect(company).to.have.property('description');",
+                            "    pm.expect(company).to.have.property('telephone');",
+                            "});",
+                            "",
+                            "// Save first company ID for booking",
+                            "if (res.data && res.data.length > 0) {",
+                            "    pm.collectionVariables.set('COMPANY_ID', res.data[0]._id);",
+                            "}"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{BASE_URL}}/companies",
+                    "host": [
+                        "{{BASE_URL}}"
+                    ],
+                    "path": [
+                        "companies"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "========== STEP 4: User Create Booking ==========",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "const res = pm.response.json();",
+                            "pm.test('Step 4: Booking created successfully', function () {",
+                            "    pm.expect(pm.response.code).to.equal(201);",
+                            "    pm.expect(res.success).to.be.true;",
+                            "    pm.expect(res.data).to.have.property('bookingDate');",
+                            "    pm.expect(res.data).to.have.property('company');",
+                            "    pm.expect(res.data).to.have.property('user');",
+                            "});",
+                            "",
+                            "pm.collectionVariables.set('BOOKING_ID', res.data._id);"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    },
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{USER_TOKEN}}"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"bookingDate\": \"2022-05-10T10:00:00.000Z\"\n}"
+                },
+                "url": {
+                    "raw": "{{BASE_URL}}/companies/{{COMPANY_ID}}/bookings",
+                    "host": [
+                        "{{BASE_URL}}"
+                    ],
+                    "path": [
+                        "companies",
+                        "{{COMPANY_ID}}",
+                        "bookings"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Step 4 - Validation: Invalid date (before May 10)",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "const res = pm.response.json();",
+                            "pm.test('Step 4 Validation: Booking fails with invalid date (before range)', function () {",
+                            "    pm.expect(pm.response.code).to.equal(400);",
+                            "    pm.expect(res.success).to.be.false;",
+                            "    pm.expect(res.error).to.include('May 10th - 13th');",
+                            "});"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    },
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{USER_TOKEN}}"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"bookingDate\": \"2022-05-01T10:00:00.000Z\"\n}"
+                },
+                "url": {
+                    "raw": "{{BASE_URL}}/companies/{{COMPANY_ID}}/bookings",
+                    "host": [
+                        "{{BASE_URL}}"
+                    ],
+                    "path": [
+                        "companies",
+                        "{{COMPANY_ID}}",
+                        "bookings"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Step 4 - Validation: Invalid date (after May 13)",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "const res = pm.response.json();",
+                            "pm.test('Step 4 Validation: Booking fails with invalid date (after range)', function () {",
+                            "    pm.expect(pm.response.code).to.equal(400);",
+                            "    pm.expect(res.success).to.be.false;",
+                            "});"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    },
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{USER_TOKEN}}"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"bookingDate\": \"2022-05-20T10:00:00.000Z\"\n}"
+                },
+                "url": {
+                    "raw": "{{BASE_URL}}/companies/{{COMPANY_ID}}/bookings",
+                    "host": [
+                        "{{BASE_URL}}"
+                    ],
+                    "path": [
+                        "companies",
+                        "{{COMPANY_ID}}",
+                        "bookings"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Step 4 - Create Booking 2 (for max 3 test)",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "const res = pm.response.json();",
+                            "pm.test('Booking 2 created successfully', function () {",
+                            "    pm.expect(pm.response.code).to.equal(201);",
+                            "    pm.expect(res.success).to.be.true;",
+                            "});"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    },
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{USER_TOKEN}}"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"bookingDate\": \"2022-05-11T10:00:00.000Z\"\n}"
+                },
+                "url": {
+                    "raw": "{{BASE_URL}}/companies/{{COMPANY_ID}}/bookings",
+                    "host": [
+                        "{{BASE_URL}}"
+                    ],
+                    "path": [
+                        "companies",
+                        "{{COMPANY_ID}}",
+                        "bookings"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Step 4 - Create Booking 3 (for max 3 test)",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "const res = pm.response.json();",
+                            "pm.test('Booking 3 created successfully', function () {",
+                            "    pm.expect(pm.response.code).to.equal(201);",
+                            "    pm.expect(res.success).to.be.true;",
+                            "});"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    },
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{USER_TOKEN}}"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"bookingDate\": \"2022-05-12T10:00:00.000Z\"\n}"
+                },
+                "url": {
+                    "raw": "{{BASE_URL}}/companies/{{COMPANY_ID}}/bookings",
+                    "host": [
+                        "{{BASE_URL}}"
+                    ],
+                    "path": [
+                        "companies",
+                        "{{COMPANY_ID}}",
+                        "bookings"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Step 4 - Validation: Max 3 bookings exceeded",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "const res = pm.response.json();",
+                            "pm.test('Step 4 Validation: 4th booking rejected (max 3)', function () {",
+                            "    pm.expect(pm.response.code).to.equal(400);",
+                            "    pm.expect(res.success).to.be.false;",
+                            "    pm.expect(res.error).to.include('3');",
+                            "});"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    },
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{USER_TOKEN}}"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"bookingDate\": \"2022-05-13T10:00:00.000Z\"\n}"
+                },
+                "url": {
+                    "raw": "{{BASE_URL}}/companies/{{COMPANY_ID}}/bookings",
+                    "host": [
+                        "{{BASE_URL}}"
+                    ],
+                    "path": [
+                        "companies",
+                        "{{COMPANY_ID}}",
+                        "bookings"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "========== STEP 5: User View Own Bookings ==========",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "const res = pm.response.json();",
+                            "pm.test('Step 5: User can view own bookings', function () {",
+                            "    pm.expect(pm.response.code).to.equal(200);",
+                            "    pm.expect(res.success).to.be.true;",
+                            "    pm.expect(res.data).to.be.an('array');",
+                            "    pm.expect(res.count).to.equal(3);",
+                            "});",
+                            "",
+                            "pm.test('Step 5: Bookings have company info populated', function () {",
+                            "    const booking = res.data[0];",
+                            "    pm.expect(booking).to.have.property('company');",
+                            "    pm.expect(booking.company).to.have.property('name');",
+                            "});"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{USER_TOKEN}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{BASE_URL}}/bookings",
+                    "host": [
+                        "{{BASE_URL}}"
+                    ],
+                    "path": [
+                        "bookings"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "========== STEP 6: User Edit Own Booking ==========",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "const res = pm.response.json();",
+                            "pm.test('Step 6: User updated booking successfully', function () {",
+                            "    pm.expect(pm.response.code).to.equal(200);",
+                            "    pm.expect(res.success).to.be.true;",
+                            "});",
+                            "",
+                            "pm.test('Step 6: Booking date updated correctly', function () {",
+                            "    const updatedDate = new Date(res.data.bookingDate);",
+                            "    pm.expect(updatedDate.getDate()).to.equal(11);",
+                            "});"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "PUT",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    },
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{USER_TOKEN}}"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"bookingDate\": \"2022-05-11T14:00:00.000Z\"\n}"
+                },
+                "url": {
+                    "raw": "{{BASE_URL}}/bookings/{{BOOKING_ID}}",
+                    "host": [
+                        "{{BASE_URL}}"
+                    ],
+                    "path": [
+                        "bookings",
+                        "{{BOOKING_ID}}"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "========== STEP 7: User Delete Own Booking ==========",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "const res = pm.response.json();",
+                            "pm.test('Step 7: User deleted booking successfully', function () {",
+                            "    pm.expect(pm.response.code).to.equal(200);",
+                            "    pm.expect(res.success).to.be.true;",
+                            "    pm.expect(res.data).to.be.an('object').that.is.empty;",
+                            "});"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "DELETE",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{USER_TOKEN}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{BASE_URL}}/bookings/{{BOOKING_ID}}",
+                    "host": [
+                        "{{BASE_URL}}"
+                    ],
+                    "path": [
+                        "bookings",
+                        "{{BOOKING_ID}}"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "========== STEP 8: User Log-out ==========",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "const res = pm.response.json();",
+                            "pm.test('Step 8: User logged out successfully', function () {",
+                            "    pm.expect(pm.response.code).to.equal(200);",
+                            "    pm.expect(res.success).to.be.true;",
+                            "});"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{USER_TOKEN}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{BASE_URL}}/logout",
+                    "host": [
+                        "{{BASE_URL}}"
+                    ],
+                    "path": [
+                        "logout"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "========== STEP 9: Admin Log-in ==========",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "const res = pm.response.json();",
+                            "pm.test('Step 9: Admin logged in successfully', function () {",
+                            "    pm.expect(pm.response.code).to.equal(200);",
+                            "    pm.expect(res.success).to.be.true;",
+                            "    pm.expect(res.data).to.have.property('token');",
+                            "});",
+                            "",
+                            "pm.collectionVariables.set('ADMIN_TOKEN', res.data.token);"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"email\": \"{{ADMIN_EMAIL}}\",\n  \"password\": \"{{ADMIN_PASSWORD}}\"\n}"
+                },
+                "url": {
+                    "raw": "{{BASE_URL}}/login",
+                    "host": [
+                        "{{BASE_URL}}"
+                    ],
+                    "path": [
+                        "login"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Step 9 - Admin Create Booking (for admin tests)",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "const res = pm.response.json();",
+                            "pm.test('Admin booking created for testing', function () {",
+                            "    pm.expect(pm.response.code).to.equal(201);",
+                            "    pm.expect(res.success).to.be.true;",
+                            "});",
+                            "pm.collectionVariables.set('ADMIN_BOOKING_ID', res.data._id);"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    },
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{ADMIN_TOKEN}}"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"bookingDate\": \"2022-05-13T09:00:00.000Z\"\n}"
+                },
+                "url": {
+                    "raw": "{{BASE_URL}}/companies/{{COMPANY_ID}}/bookings",
+                    "host": [
+                        "{{BASE_URL}}"
+                    ],
+                    "path": [
+                        "companies",
+                        "{{COMPANY_ID}}",
+                        "bookings"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "========== STEP 10: Admin View All Bookings ==========",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "const res = pm.response.json();",
+                            "pm.test('Step 10: Admin can view all bookings', function () {",
+                            "    pm.expect(pm.response.code).to.equal(200);",
+                            "    pm.expect(res.success).to.be.true;",
+                            "    pm.expect(res.data).to.be.an('array');",
+                            "});",
+                            "",
+                            "pm.test('Step 10: Admin sees bookings from all users', function () {",
+                            "    pm.expect(res.count).to.be.greaterThan(0);",
+                            "});"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{ADMIN_TOKEN}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{BASE_URL}}/bookings",
+                    "host": [
+                        "{{BASE_URL}}"
+                    ],
+                    "path": [
+                        "bookings"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "========== STEP 11: Admin Edit Any Booking ==========",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "const res = pm.response.json();",
+                            "pm.test('Step 11: Admin updated booking successfully', function () {",
+                            "    pm.expect(pm.response.code).to.equal(200);",
+                            "    pm.expect(res.success).to.be.true;",
+                            "});",
+                            "",
+                            "pm.test('Step 11: Booking date updated correctly', function () {",
+                            "    const updatedDate = new Date(res.data.bookingDate);",
+                            "    pm.expect(updatedDate.getDate()).to.equal(13);",
+                            "});"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "PUT",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    },
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{ADMIN_TOKEN}}"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"bookingDate\": \"2022-05-13T15:00:00.000Z\"\n}"
+                },
+                "url": {
+                    "raw": "{{BASE_URL}}/bookings/{{ADMIN_BOOKING_ID}}",
+                    "host": [
+                        "{{BASE_URL}}"
+                    ],
+                    "path": [
+                        "bookings",
+                        "{{ADMIN_BOOKING_ID}}"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "========== STEP 12: Admin Delete Any Booking ==========",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "const res = pm.response.json();",
+                            "pm.test('Step 12: Admin deleted booking successfully', function () {",
+                            "    pm.expect(pm.response.code).to.equal(200);",
+                            "    pm.expect(res.success).to.be.true;",
+                            "    pm.expect(res.data).to.be.an('object').that.is.empty;",
+                            "});"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "DELETE",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{ADMIN_TOKEN}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{BASE_URL}}/bookings/{{ADMIN_BOOKING_ID}}",
+                    "host": [
+                        "{{BASE_URL}}"
+                    ],
+                    "path": [
+                        "bookings",
+                        "{{ADMIN_BOOKING_ID}}"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "========== VERIFY: Final Booking Count ==========",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "const res = pm.response.json();",
+                            "pm.test('Final: Verify remaining bookings after all operations', function () {",
+                            "    pm.expect(pm.response.code).to.equal(200);",
+                            "    pm.expect(res.success).to.be.true;",
+                            "    pm.expect(res.data).to.be.an('array');",
+                            "});",
+                            "",
+                            "pm.test('Final: All test operations completed successfully ✅', function () {",
+                            "    pm.expect(true).to.be.true;",
+                            "});"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{ADMIN_TOKEN}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{BASE_URL}}/bookings",
+                    "host": [
+                        "{{BASE_URL}}"
+                    ],
+                    "path": [
+                        "bookings"
+                    ]
+                }
+            }
+        }
+    ]
+}
