@@ -50,21 +50,33 @@ exports.addBooking = async (req, res, next) => {
     }
 };
 
-// @desc    Get bookings
+// @desc    Get bookings (user sees own, admin sees all)
 // @route   GET /api/v1/bookings
 // @access  Private
-exports.getBooking = async (req, res, next) => {
+exports.getBookings = async (req, res, next) => {
     try {
-        const bookings = await Booking.find()
-            .populate({
+        let query;
+
+        // Req 4: User can only view their OWN bookings
+        // Req 7: Admin can view ANY bookings
+        if (req.user.role === "admin") {
+            query = Booking.find().populate({
                 path: "company",
-                select: "name description"
+                select: "name address website description telephone",
             });
+        } else {
+            query = Booking.find({ user: req.user.id }).populate({
+                path: "company",
+                select: "name address website description telephone",
+            });
+        }
+
+        const bookings = await query;
 
         res.status(200).json({
             success: true,
             count: bookings.length,
-            data: bookings
+            data: bookings,
         });
     } catch (err) {
         console.error(err);
@@ -74,7 +86,7 @@ exports.getBooking = async (req, res, next) => {
 
 // @desc    Update booking
 // @route   PUT /api/v1/bookings/:id
-// @access  Private/Admin
+// @access  Private
 exports.updateBooking = async (req, res, next) => {
     try {
         let booking = await Booking.findById(req.params.id);
@@ -82,31 +94,40 @@ exports.updateBooking = async (req, res, next) => {
         if (!booking) {
             return res.status(404).json({
                 success: false,
-                error: "Booking not found"
+                error: "Booking not found",
             });
         }
 
-        booking = await Booking.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            {
-                new: true,
-                runValidators: true
-            }
-        );
+        // Req 5: User can only edit their OWN bookings
+        // Req 8: Admin can edit ANY bookings
+        if (
+            booking.user.toString() !== req.user.id &&
+            req.user.role !== "admin"
+        ) {
+            return res.status(401).json({
+                success: false,
+                error: "Not authorized to update this booking",
+            });
+        }
+
+        booking = await Booking.findByIdAndUpdate(req.params.id, req.body, {
+            new: true,
+            runValidators: true,
+        });
 
         res.status(200).json({
             success: true,
-            data: booking
+            data: booking,
         });
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, error: "Server Error" });
     }
 };
+
 // @desc    Delete booking
 // @route   DELETE /api/v1/bookings/:id
-// @access  Private/Admin
+// @access  Private
 exports.deleteBooking = async (req, res, next) => {
     try {
         const booking = await Booking.findById(req.params.id);
@@ -114,7 +135,19 @@ exports.deleteBooking = async (req, res, next) => {
         if (!booking) {
             return res.status(404).json({
                 success: false,
-                error: "Booking not found"
+                error: "Booking not found",
+            });
+        }
+
+        // Req 6: User can only delete their OWN bookings
+        // Req 9: Admin can delete ANY bookings
+        if (
+            booking.user.toString() !== req.user.id &&
+            req.user.role !== "admin"
+        ) {
+            return res.status(401).json({
+                success: false,
+                error: "Not authorized to delete this booking",
             });
         }
 
@@ -122,7 +155,7 @@ exports.deleteBooking = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            data: {}
+            data: {},
         });
     } catch (err) {
         console.error(err);
