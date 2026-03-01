@@ -9,7 +9,6 @@ exports.addBooking = async (req, res, next) => {
         req.body.company = req.params.companyId;
         req.body.user = req.user.id;
 
-        // Check if company exists
         const company = await Company.findById(req.params.companyId);
         if (!company) {
             return res
@@ -17,7 +16,6 @@ exports.addBooking = async (req, res, next) => {
                 .json({ success: false, error: "Company not found" });
         }
 
-        // Validate booking date is between May 10-13, 2022
         const bookingDate = new Date(req.body.bookingDate);
         const startDate = new Date("2022-05-10T00:00:00.000Z");
         const endDate = new Date("2022-05-13T23:59:59.999Z");
@@ -29,7 +27,6 @@ exports.addBooking = async (req, res, next) => {
             });
         }
 
-        // Check if user already has 3 bookings
         const existingBookings = await Booking.find({ user: req.user.id });
         if (existingBookings.length >= 3 && req.user.role !== "admin") {
             return res.status(400).json({
@@ -50,15 +47,13 @@ exports.addBooking = async (req, res, next) => {
     }
 };
 
-// @desc    Get bookings (user sees own, admin sees all)
+// @desc    Get bookings
 // @route   GET /api/v1/bookings
 // @access  Private
 exports.getBookings = async (req, res, next) => {
     try {
         let query;
 
-        // Req 4: User can only view their OWN bookings
-        // Req 7: Admin can view ANY bookings
         if (req.user.role === "admin") {
             query = Booking.find().populate({
                 path: "company",
@@ -98,8 +93,6 @@ exports.updateBooking = async (req, res, next) => {
             });
         }
 
-        // Req 5: User can only edit their OWN bookings
-        // Req 8: Admin can edit ANY bookings
         if (
             booking.user.toString() !== req.user.id &&
             req.user.role !== "admin"
@@ -139,8 +132,6 @@ exports.deleteBooking = async (req, res, next) => {
             });
         }
 
-        // Req 6: User can only delete their OWN bookings
-        // Req 9: Admin can delete ANY bookings
         if (
             booking.user.toString() !== req.user.id &&
             req.user.role !== "admin"

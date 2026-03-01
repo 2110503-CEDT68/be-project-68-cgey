@@ -90,9 +90,7 @@ exports.deleteCompany = async (req, res, next) => {
                 .json({ success: false, error: "Company not found" });
         }
 
-        // Remove all bookings associated with this company
         await require("../model/Booking").deleteMany({ company: req.params.id });
-
         await company.deleteOne();
 
         res.status(200).json({

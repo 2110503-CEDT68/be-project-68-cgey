@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
 const User = require("../model/User");
 
-//@desc Register a new user
-// @route POST /auth/register
-// @access Public
+// @desc    Register user
+// @route   POST /api/v1/register
+// @access  Public
 exports.register = async (req, res) => {
   try {
     const { name, telephone, email, password, role } = req.body;
@@ -20,13 +20,15 @@ exports.register = async (req, res) => {
       success: true,
       data: user,
     });
-    console.log(`User ${user._id} registered successfully`);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
+// @desc    Get all users
+// @route   GET /api/v1/user
+// @access  Public
 exports.getUser = async (req, res, next) => {
   try {
     const user = await User.find();
@@ -41,6 +43,9 @@ exports.getUser = async (req, res, next) => {
   }
 };
 
+// @desc    Login user
+// @route   POST /api/v1/login
+// @access  Public
 exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -58,6 +63,7 @@ exports.login = async (req, res, next) => {
     res.status(500).json({ error: "something went wrong" });
   }
 };
+
 const sendTokenResponse = (user, statusCode, res) => {
   const token = user.generateAuthToken();
   const options = {
@@ -75,6 +81,9 @@ const sendTokenResponse = (user, statusCode, res) => {
   });
 };
 
+// @desc    Logout user
+// @route   POST /api/v1/logout
+// @access  Private
 exports.logout = async (req, res, next) => {
   res.cookie("token", "none", {
     expires: new Date(Date.now() + 10 * 1000),
@@ -86,6 +95,9 @@ exports.logout = async (req, res, next) => {
   });
 };
 
+// @desc    Get current logged in user
+// @route   GET /api/v1/getme
+// @access  Private
 exports.getMe = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);

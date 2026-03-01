@@ -7,14 +7,12 @@ const {
     deleteCompany,
 } = require("../controller/companies");
 
-// Include booking router for re-routing
 const bookingRouter = require("./bookings");
 
 const { protect, authorize } = require("../middleware/auth");
 
 const router = express.Router();
 
-// Re-route into booking router
 router.use("/:companyId/bookings", bookingRouter);
 
 router

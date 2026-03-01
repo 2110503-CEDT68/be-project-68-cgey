@@ -37,7 +37,6 @@ const CompanySchema = new mongoose.Schema(
     }
 );
 
-// Reverse populate with virtuals - show bookings for each company
 CompanySchema.virtual("bookings", {
     ref: "Booking",
     localField: "_id",
