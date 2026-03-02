@@ -8,21 +8,52 @@ exports.register = async (req, res) => {
   try {
     const { name, telephone, email, password, role } = req.body;
 
+    if (!name || !telephone || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: "Please provide name, telephone, email, and password",
+      });
+    }
+
+    const normalizedRole = role || "user";
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      const isSamePassword = await existingUser.matchPassword(password);
+      const isSameProfile =
+        existingUser.name === name &&
+        existingUser.telephone === telephone &&
+        existingUser.role === normalizedRole &&
+        isSamePassword;
+
+      if (isSameProfile) {
+        return res.status(201).json({
+          success: true,
+          data: existingUser,
+        });
+      }
+
+      return res.status(400).json({
+        success: false,
+        error: "Email already exists",
+      });
+    }
+
     const user = await User.create({
       name,
       telephone,
       email,
       password,
-      role,
+      role: normalizedRole,
     });
 
-    res.status(200).json({
+    res.status(201).json({
       success: true,
       data: user,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(400).json({ success: false, error: error.message });
   }
 };
 

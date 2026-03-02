@@ -17,6 +17,12 @@ exports.addBooking = async (req, res, next) => {
         }
 
         const bookingDate = new Date(req.body.bookingDate);
+        if (Number.isNaN(bookingDate.getTime())) {
+            return res.status(400).json({
+                success: false,
+                error: "Invalid booking date",
+            });
+        }
         const startDate = new Date("2022-05-10T00:00:00.000Z");
         const endDate = new Date("2022-05-13T23:59:59.999Z");
 
@@ -27,14 +33,32 @@ exports.addBooking = async (req, res, next) => {
             });
         }
 
-        const existingBookings = await Booking.find({ user: req.user.id });
-        if (existingBookings.length >= 3 && req.user.role !== "admin") {
-            return res.status(400).json({
-                success: false,
-                error: "You can only book up to 3 interview sessions",
-            });
+        if (req.user.role !== "admin") {
+            const existingBookings = await Booking.find({ user: req.user.id });
+
+            const duplicateBooking = existingBookings.find(
+                (booking) =>
+                    new Date(booking.bookingDate).getTime() ===
+                        bookingDate.getTime() &&
+                    booking.company.toString() === req.params.companyId
+            );
+
+            if (duplicateBooking) {
+                return res.status(201).json({
+                    success: true,
+                    data: duplicateBooking,
+                });
+            }
+
+            if (existingBookings.length >= 3) {
+                return res.status(400).json({
+                    success: false,
+                    error: "You can only book up to 3 interview sessions",
+                });
+            }
         }
 
+        req.body.bookingDate = bookingDate;
         const booking = await Booking.create(req.body);
 
         res.status(201).json({

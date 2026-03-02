@@ -43,6 +43,14 @@ exports.getCompany = async (req, res, next) => {
 // @access  Private (admin)
 exports.createCompany = async (req, res, next) => {
     try {
+        const existingCompany = await Company.findOne({ name: req.body.name });
+        if (existingCompany) {
+            return res.status(201).json({
+                success: true,
+                data: existingCompany,
+            });
+        }
+
         const company = await Company.create(req.body);
         res.status(201).json({
             success: true,
