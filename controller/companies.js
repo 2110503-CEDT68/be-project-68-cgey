@@ -5,7 +5,7 @@ const Company = require("../model/Company");
 // @access  Public
 exports.getCompanies = async (req, res, next) => {
     try {
-        const companies = await Company.find();
+        const companies = await Company.find().populate("bookings").populate("reviews");
         res.status(200).json({
             success: true,
             count: companies.length,
@@ -22,7 +22,7 @@ exports.getCompanies = async (req, res, next) => {
 // @access  Public
 exports.getCompany = async (req, res, next) => {
     try {
-        const company = await Company.findById(req.params.id);
+        const company = await Company.findById(req.params.id).populate("bookings").populate("reviews");
         if (!company) {
             return res
                 .status(404)

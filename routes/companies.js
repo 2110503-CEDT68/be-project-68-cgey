@@ -8,12 +8,14 @@ const {
 } = require("../controller/companies");
 
 const bookingRouter = require("./bookings");
+const reviewRouter = require("./reviews");
 
 const { protect, authorize } = require("../middleware/auth");
 
 const router = express.Router();
 
 router.use("/:companyId/bookings", bookingRouter);
+router.use("/:companyId/reviews", reviewRouter);
 
 router
     .route("/")
